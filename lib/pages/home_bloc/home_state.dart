@@ -13,6 +13,7 @@ class HomeErrorState extends HomeState {
   HomeErrorState({required this.message});
 }
 
+
 class HomeStateLoaded extends HomeState {
   final List list;
 

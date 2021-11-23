@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
-
-import 'package:crud_bloc/pages/home/home_bloc/home_event.dart';
-import 'package:crud_bloc/pages/home/home_bloc/home_state.dart';
 import 'package:crud_bloc/util/armazenamento_util.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'home_event.dart';
+import 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc(HomeState initialState) : super(HomeLoadingState());
@@ -16,6 +15,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     switch (event.runtimeType) {
       case HomeFetchList:
         state = await _fetchList();
+        break;
+      case HomeFilteredList:
+        state = await _filteredList(state.props);
         break;
       case HomeFetchListWithError:
         state = await _fetchListWithError();
@@ -32,7 +34,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     var aux = await ArmazenamentoUtil.buscar('products');
     // log('Aux buscado' + aux.toString());
     if (aux == null) {
-      final String response = await rootBundle.loadString('dev_assets/db.json');
+      final String response = await rootBundle.loadString('assets/db.json');
       // log('response arquivo' + response.toString());
 
       var data = await json.decode(response);
@@ -45,7 +47,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             .toLowerCase()
             .compareTo(b['name'].toString().toLowerCase());
       });
-
       await ArmazenamentoUtil.salvar('products', list);
     } else {
       list = aux;
@@ -58,6 +59,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     });
     return HomeStateLoaded(list: list);
   }
+}
+
+Future<HomeState> _filteredList(List listaProdutos) async {
+  log('entrou');
+  return HomeStateLoaded(list: listaProdutos);
 }
 
 Future<HomeState> _fetchListWithEmptyList() async {

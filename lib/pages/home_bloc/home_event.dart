@@ -7,6 +7,8 @@ class HomeEvent extends Equatable {
 
 class HomeFetchList extends HomeEvent {}
 
+class HomeFilteredList extends HomeEvent{}
+
 class HomeFetchListWithError extends HomeEvent {}
 
 class HomeFetchListWithEmptyList extends HomeEvent {}
