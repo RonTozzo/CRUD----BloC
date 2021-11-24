@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       home: BlocProvider<HomeBloc>(
         create: (BuildContext blocContext) =>
             HomeBloc(HomeLoadingState())..add(HomeFetchList()),
-        child: const ListaProdutosPage(),
+        child: const HomePage(),
       ),
     );
   }

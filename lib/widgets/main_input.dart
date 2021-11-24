@@ -1,7 +1,9 @@
+// ignore_for_file: use_key_in_widget_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class VxInput extends StatelessWidget {
+class MainInput extends StatelessWidget {
   final String? _label;
   final String? _hintText;
   final TextEditingController? _controller;
@@ -16,7 +18,7 @@ class VxInput extends StatelessWidget {
   final TextAlign _textAlign;
   final String? _initVal;
 
-  const VxInput({
+  const MainInput({
     label = '',
     hintText,
     controller,

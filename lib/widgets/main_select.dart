@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 
-class VxSelectItem {
+class MainSelectItem {
   String text;
   dynamic value;
 
-  VxSelectItem({required this.text, this.value});
+  MainSelectItem({required this.text, this.value});
 }
 
-class VxSelect extends StatelessWidget {
+class MainSelect extends StatelessWidget {
   final String _label;
-  final List<VxSelectItem> items;
+  final List<MainSelectItem> items;
   final dynamic _value;
   final Function(dynamic)? _onSaved;
   final Function(dynamic)? _onChanged;
   final Function(dynamic)? _validator;
 
-  const VxSelect({
+  const MainSelect({
     required label,
     required this.items,
     onChanged,

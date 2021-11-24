@@ -16,9 +16,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       case HomeFetchList:
         state = await _fetchList();
         break;
-      case HomeFilteredList:
-        state = await _filteredList(state.props);
-        break;
       case HomeFetchListWithError:
         state = await _fetchListWithError();
         break;
@@ -59,11 +56,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     });
     return HomeStateLoaded(list: list);
   }
-}
-
-Future<HomeState> _filteredList(List listaProdutos) async {
-  log('entrou');
-  return HomeStateLoaded(list: listaProdutos);
 }
 
 Future<HomeState> _fetchListWithEmptyList() async {
