@@ -28,13 +28,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<HomeState> _fetchList() async {
     List list = [];
     var aux = await buscarStorage('products');
-    // log('Aux buscado' + aux.toString());
     if (aux == null) {
       final String response = await rootBundle.loadString('assets/db.json');
       // log('response arquivo' + response.toString());
-
       var data = await json.decode(response);
-      // log('data decodado' + data.toString());
 
       list = data['products'];
       list.sort((a, b) {

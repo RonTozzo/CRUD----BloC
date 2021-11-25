@@ -19,49 +19,20 @@ class EdicaoProduto extends StatefulWidget {
 
 class _EdicaoProdutoState extends State<EdicaoProduto> {
   final NumberFormat _br = NumberFormat('#,###,###,###,##0.00', 'pt_BR');
-
   Map produto = {};
   final GlobalKey<FormState> _formKey = GlobalKey();
-
   List disponivelParaVenda = [
-    {
-      'value': true,
-      'txt': 'SIM',
-    },
-    {
-      'value': false,
-      'txt': 'NÃO',
-    },
+    {'value': true, 'txt': 'SIM'},
+    {'value': false, 'txt': 'NÃO'},
   ];
   List vezesEmCredito = [
-    {
-      'value': '1',
-      'txt': '1x',
-    },
-    {
-      'value': '2',
-      'txt': '2x',
-    },
-    {
-      'value': '3',
-      'txt': '3x',
-    },
-    {
-      'value': '4',
-      'txt': '4x',
-    },
-    {
-      'value': '5',
-      'txt': '5x',
-    },
-    {
-      'value': '6',
-      'txt': '6x',
-    },
-    {
-      'value': '7',
-      'txt': '7x',
-    },
+    {'value': '1', 'txt': '1x'},
+    {'value': '2', 'txt': '2x'},
+    {'value': '3', 'txt': '3x'},
+    {'value': '4', 'txt': '4x'},
+    {'value': '5', 'txt': '5x'},
+    {'value': '6', 'txt': '6x'},
+    {'value': '7', 'txt': '7x'}
   ];
   final nomeCtrl = TextEditingController();
   final regularPriceCtrl = TextEditingController();
@@ -94,6 +65,95 @@ class _EdicaoProdutoState extends State<EdicaoProduto> {
       }
       setState(() {});
     });
+  }
+
+  void _editarProduto() async {
+    if (_formKey.currentState!.validate()) {
+      List listaProdutos = await buscarStorage('products');
+      if (_formData['actual_price'] == '' ||
+          _formData['actual_price'] == null) {
+        log('entrou');
+        _formData['actual_price'] = _formData['regular_price'];
+      }
+      log(_formData['actual_price'].toString());
+      var aux = _formData['actual_price'].toString().split(' ');
+      log(aux.toString());
+      String aux2 = aux[1].toString().replaceAll('.', '');
+      aux2 = aux2.replaceAll(',', '.');
+      double precoPrazo =
+          double.parse(aux2) / int.parse(_formData['installments']);
+      _formData['installments'] =
+          '${_formData['installments']}x R\$ ${_br.format(precoPrazo)}';
+
+      _formKey.currentState!.save();
+      Map newProduct = {
+        'name': _formData['name'],
+        'on_sale': _formData['on_sale'],
+        'regular_price': _formData['regular_price'],
+        'actual_price': _formData['actual_price'],
+        'discount_percentage': _formData['discount_percentage'],
+        'installments': _formData['installments'],
+      };
+      for (var i = 0; i < listaProdutos.length; i++) {
+        if (produto['style'] == listaProdutos[i]['style']) {
+          listaProdutos[i]['name'] = newProduct['name'];
+          listaProdutos[i]['on_sale'] = newProduct['on_sale'];
+          listaProdutos[i]['regular_price'] = newProduct['regular_price'];
+          listaProdutos[i]['actual_price'] = newProduct['actual_price'];
+          listaProdutos[i]['discount_percentage'] =
+              newProduct['discount_percentage'];
+          listaProdutos[i]['installments'] = newProduct['installments'];
+          break;
+        }
+      }
+      await salvarStorage('products', listaProdutos);
+      mostrarSnackbar(
+        context,
+        'Produto editado com sucesso',
+        cor: Colors.blue,
+        sec: 6,
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => BlocProvider<HomeBloc>(
+            create: (BuildContext blocContext) =>
+                HomeBloc(HomeLoadingState())..add(HomeFetchList()),
+            child: const HomePage(),
+          ),
+        ),
+      );
+    }
+  }
+
+  void _excluirProduto() async {
+    bool confirm = await mostrarAlertaConfirmacao(
+        context, 'Você tem certeza que deseja excluir este produto?');
+    if (confirm) {
+      List listaProdutos = await buscarStorage('products');
+      for (var i = 0; i < listaProdutos.length; i++) {
+        if (produto['style'] == listaProdutos[i]['style']) {
+          listaProdutos.removeAt(i);
+          break;
+        }
+      }
+      await salvarStorage('products', listaProdutos);
+      mostrarSnackbar(
+        context,
+        'Produto excluído com sucesso',
+        cor: Colors.red,
+        sec: 6,
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BlocProvider<HomeBloc>(
+            create: (BuildContext blocContext) =>
+                HomeBloc(HomeLoadingState())..add(HomeFetchList()),
+            child: const HomePage(),
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -205,55 +265,7 @@ class _EdicaoProdutoState extends State<EdicaoProduto> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
       onPressed: () async {
-        if (_formKey.currentState!.validate()) {
-          List listaProdutos = await buscarStorage('products');
-          if (_formData['actual_price'] == '' ||
-              _formData['actual_price'] == null) {
-            log('entrou');
-            _formData['actual_price'] = _formData['regular_price'];
-          }
-          log(_formData['actual_price'].toString());
-          var aux = _formData['actual_price'].toString().split(' ');
-          log(aux.toString());
-          String aux2 = aux[1].toString().replaceAll('.', '');
-          aux2 = aux2.replaceAll(',', '.');
-          double precoPrazo =
-              double.parse(aux2) / int.parse(_formData['installments']);
-          _formData['installments'] =
-              '${_formData['installments']}x R\$ ${_br.format(precoPrazo)}';
-
-          _formKey.currentState!.save();
-          Map newProduct = {
-            'name': _formData['name'],
-            'on_sale': _formData['on_sale'],
-            'regular_price': _formData['regular_price'],
-            'actual_price': _formData['actual_price'],
-            'discount_percentage': _formData['discount_percentage'],
-            'installments': _formData['installments'],
-          };
-          for (var i = 0; i < listaProdutos.length; i++) {
-            if (produto['style'] == listaProdutos[i]['style']) {
-              listaProdutos[i]['name'] = newProduct['name'];
-              listaProdutos[i]['on_sale'] = newProduct['on_sale'];
-              listaProdutos[i]['regular_price'] = newProduct['regular_price'];
-              listaProdutos[i]['actual_price'] = newProduct['actual_price'];
-              listaProdutos[i]['discount_percentage'] =
-                  newProduct['discount_percentage'];
-              listaProdutos[i]['installments'] = newProduct['installments'];
-              break;
-            }
-          }
-          await salvarStorage('products', listaProdutos);
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => BlocProvider<HomeBloc>(
-                create: (BuildContext blocContext) =>
-                    HomeBloc(HomeLoadingState())..add(HomeFetchList()),
-                child: const HomePage(),
-              ),
-            ),
-          );
-        }
+        _editarProduto();
       },
     );
 
@@ -266,34 +278,13 @@ class _EdicaoProdutoState extends State<EdicaoProduto> {
         ),
       ),
       onPressed: () async {
-        bool confirm = await mostrarAlertaConfirmacao(
-            context, 'Você tem certeza que deseja excluir este produto?');
-        if (confirm) {
-          List listaProdutos = await buscarStorage('products');
-          for (var i = 0; i < listaProdutos.length; i++) {
-            if (produto['style'] == listaProdutos[i]['style']) {
-              listaProdutos.removeAt(i);
-              break;
-            }
-          }
-          await salvarStorage('products', listaProdutos);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BlocProvider<HomeBloc>(
-                create: (BuildContext blocContext) =>
-                    HomeBloc(HomeLoadingState())..add(HomeFetchList()),
-                child: const HomePage(),
-              ),
-            ),
-          );
-        }
+        _excluirProduto();
       },
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edição de produto'),
+        title: const Text('EDIÇÃO DE PRODUTO'),
         leading: IconButton(
           onPressed: () {
             Navigator.pushReplacement(

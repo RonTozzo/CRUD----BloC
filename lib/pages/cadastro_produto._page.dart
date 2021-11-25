@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:crud_bloc/fun/armazenamento_fun.dart';
+import 'package:crud_bloc/fun/dialogo_fun.dart';
 import 'package:crud_bloc/widgets/main_input.dart';
 import 'package:crud_bloc/widgets/main_select.dart';
 import 'package:easy_mask/easy_mask.dart';
@@ -20,8 +21,6 @@ class CadastroProdutoPage extends StatefulWidget {
 
 class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
   final NumberFormat _br = NumberFormat('#,###,###,###,##0.00', 'pt_BR');
-  Map? produto;
-
   final GlobalKey<FormState> _formKey = GlobalKey();
   final Map<String, dynamic> _formData = {
     'name': '',
@@ -32,52 +31,62 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
     'installments': '',
   };
   List disponivelParaVenda = [
-    {
-      'value': true,
-      'txt': 'SIM',
-    },
-    {
-      'value': false,
-      'txt': 'NÃO',
-    },
+    {'value': true, 'txt': 'SIM'},
+    {'value': false, 'txt': 'NÃO'}
   ];
   List vezesEmCredito = [
-    {
-      'value': '1',
-      'txt': '1x',
-    },
-    {
-      'value': '2',
-      'txt': '2x',
-    },
-    {
-      'value': '3',
-      'txt': '3x',
-    },
-    {
-      'value': '4',
-      'txt': '4x',
-    },
-    {
-      'value': '5',
-      'txt': '5x',
-    },
-    {
-      'value': '6',
-      'txt': '6x',
-    },
-    {
-      'value': '7',
-      'txt': '7x',
-    },
+    {'value': '1', 'txt': '1x'},
+    {'value': '2', 'txt': '2x'},
+    {'value': '3', 'txt': '3x'},
+    {'value': '4', 'txt': '4x'},
+    {'value': '5', 'txt': '5x'},
+    {'value': '6', 'txt': '6x'},
+    {'value': '7', 'txt': '7x'}
   ];
+  void _cadastrarProduto() async {
+    if (_formKey.currentState!.validate()) {
+      List listaProdutos = await buscarStorage('products');
+      if (_formData['actual_price'] == '' ||
+          _formData['actual_price'] == null) {
+        _formData['actual_price'] = _formData['regular_price'];
+      }
 
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(milliseconds: 120), () async {
-      produto = ModalRoute.of(context)?.settings.arguments as Map?;
-    });
+      var aux = _formData['actual_price'].toString().split(' ');
+      String aux2 = aux[1].toString().replaceAll('.', '');
+      aux2 = aux2.replaceAll(',', '.');
+      double precoPrazo =
+          double.parse(aux2) / int.parse(_formData['installments']);
+      _formData['installments'] =
+          '${_formData['installments']}x R\$ ${_br.format(precoPrazo)}';
+
+      _formKey.currentState!.save();
+      Map newProduct = {
+        'name': _formData['name'],
+        'on_sale': _formData['on_sale'],
+        'regular_price': _formData['regular_price'],
+        'actual_price': _formData['actual_price'],
+        'discount_percentage': _formData['discount_percentage'],
+        'installments': _formData['installments'],
+      };
+
+      listaProdutos.add(newProduct);
+      await salvarStorage('products', listaProdutos);
+      mostrarSnackbar(
+        context,
+        'Produto cadastrado com sucesso',
+        cor: Colors.green,
+        sec: 6,
+      );
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => BlocProvider<HomeBloc>(
+            create: (BuildContext blocContext) =>
+                HomeBloc(HomeLoadingState())..add(HomeFetchList()),
+            child: const HomePage(),
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -185,45 +194,8 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
       style: ElevatedButton.styleFrom(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
-      onPressed: () async {
-        if (_formKey.currentState!.validate()) {
-          List listaProdutos = await buscarStorage('products');
-          if (_formData['actual_price'] == '' ||
-              _formData['actual_price'] == null) {
-            _formData['actual_price'] = _formData['regular_price'];
-          }
-
-          var aux = _formData['actual_price'].toString().split(' ');
-          String aux2 = aux[1].toString().replaceAll('.', '');
-          aux2 = aux2.replaceAll(',', '.');
-          double precoPrazo =
-              double.parse(aux2) / int.parse(_formData['installments']);
-          _formData['installments'] =
-              '${_formData['installments']}x R\$ ${_br.format(precoPrazo)}';
-
-          _formKey.currentState!.save();
-          Map newProduct = {
-            'name': _formData['name'],
-            'on_sale': _formData['on_sale'],
-            'regular_price': _formData['regular_price'],
-            'actual_price': _formData['actual_price'],
-            'discount_percentage': _formData['discount_percentage'],
-            'installments': _formData['installments'],
-          };
-
-          listaProdutos.add(newProduct);
-          await salvarStorage('products', listaProdutos);
-
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => BlocProvider<HomeBloc>(
-                create: (BuildContext blocContext) =>
-                    HomeBloc(HomeLoadingState())..add(HomeFetchList()),
-                child: const HomePage(),
-              ),
-            ),
-          );
-        }
+      onPressed: () {
+        _cadastrarProduto();
       },
     );
     return Padding(
