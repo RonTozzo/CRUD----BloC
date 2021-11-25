@@ -1,13 +1,9 @@
-import 'dart:convert';
-import 'package:path/path.dart';
+ import 'dart:convert';
+
 import 'package:sqflite/sqflite.dart';
 
-class ArmazenamentoUtil {
-  static Future<Database> _openDB() async {
-    var databasesPath = await getDatabasesPath();
-    String path = join(databasesPath, 'storage.db');
-
-    return openDatabase(path, version: 1,
+Future<Database> _openDB() async {
+    return openDatabase('my_db.db', version: 1,
         onCreate: (Database db, int version) async {
       await db.execute(
         'CREATE TABLE tb_main (key STRING PRIMARY KEY, value TEXT)',
@@ -15,12 +11,12 @@ class ArmazenamentoUtil {
     });
   }
 
-  static Future<void> zerar() async {
+   Future<void> zerarStorage() async {
     final db = await _openDB();
     db.delete('tb_main');
   }
 
-  static Future<void> salvar(String key, dynamic data) async {
+   Future<void> salvarStorage(String key, dynamic data) async {
     final db = await _openDB();
     await db.insert(
       'tb_main',
@@ -29,12 +25,12 @@ class ArmazenamentoUtil {
     );
   }
 
-  static Future<void> apagar(key) async {
+   Future<void> apagarStorage(key) async {
     final db = await _openDB();
     await db.delete('tb_main', where: 'key = ?', whereArgs: [key]);
   }
 
-  static Future<dynamic> buscar(String key) async {
+   Future<dynamic> buscarStorage(String key) async {
     final db = await _openDB();
     final query = await db.query('tb_main', where: 'key = ?', whereArgs: [key]);
     return query.isNotEmpty
@@ -42,13 +38,13 @@ class ArmazenamentoUtil {
         : null;
   }
 
-  static Future<List> buscarAllKeys() async {
+   Future<List> buscarAllKeysStorage() async {
     final db = await _openDB();
     final query = await db.query('tb_main', columns: ['key']);
     return query.map((val) => val['key'] as String).toList();
   }
 
-  static Future<List> buscarAllLike(String like) async {
+   Future<List> buscarAllLikeStorage(String like) async {
     final db = await _openDB();
     var query =
         await db.rawQuery("SELECT * FROM tb_main WHERE key LIKE '%$like%'");
@@ -60,4 +56,3 @@ class ArmazenamentoUtil {
       };
     }).toList();
   }
-}

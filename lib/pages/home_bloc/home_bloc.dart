@@ -1,6 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
-import 'package:crud_bloc/util/armazenamento_util.dart';
+import 'package:crud_bloc/fun/armazenamento_fun.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'home_event.dart';
@@ -28,7 +27,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<HomeState> _fetchList() async {
     List list = [];
-    var aux = await ArmazenamentoUtil.buscar('products');
+    var aux = await buscarStorage('products');
     // log('Aux buscado' + aux.toString());
     if (aux == null) {
       final String response = await rootBundle.loadString('assets/db.json');
@@ -44,7 +43,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             .toLowerCase()
             .compareTo(b['name'].toString().toLowerCase());
       });
-      await ArmazenamentoUtil.salvar('products', list);
+      await salvarStorage('products', list);
     } else {
       list = aux;
     }
